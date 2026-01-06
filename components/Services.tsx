@@ -1,0 +1,68 @@
+import React from 'react';
+import { SiteContent, Service } from '../types';
+import { HardDrive, ShieldAlert, GraduationCap, ChevronRight } from 'lucide-react';
+
+interface ServicesProps {
+  content: SiteContent['services'];
+}
+
+const getIcon = (id: string) => {
+  switch (id) {
+    case 'forensics': return <HardDrive className="h-10 w-10" />;
+    case 'cybersec': return <ShieldAlert className="h-10 w-10" />;
+    case 'training': return <GraduationCap className="h-10 w-10" />;
+    default: return <HardDrive className="h-10 w-10" />;
+  }
+};
+
+const Services: React.FC<ServicesProps> = ({ content }) => {
+  return (
+    <section id="services" className="py-24 bg-navy-950 relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">{content.heading}</h2>
+          <div className="h-1 w-24 bg-cyan-600 mx-auto"></div>
+        </div>
+
+        <div className="grid lg:grid-cols-3 gap-8">
+          {content.items.map((service: Service) => (
+            <div key={service.id} className="bg-slate-900 border border-slate-800 p-8 rounded-sm hover:border-cyan-500/50 transition-all duration-300 group">
+              <div className="mb-6 text-cyan-500 group-hover:text-cyan-400 transition-colors">
+                {getIcon(service.id)}
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-4">{service.title}</h3>
+              <p className="text-slate-400 mb-8 min-h-[48px]">{service.description}</p>
+              
+              {service.points.length > 0 && (
+                <div className="space-y-4 pt-6 border-t border-slate-800">
+                  {service.points.map((point, idx) => (
+                    <div key={idx}>
+                      <h5 className="text-sm font-bold text-cyan-100 uppercase tracking-wide mb-1">{point.title}</h5>
+                      <p className="text-sm text-slate-500">{point.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {service.points.length === 0 && (
+                 <div className="pt-6 border-t border-slate-800">
+                   <p className="text-sm font-mono text-cyan-500/70">
+                     // Curriculum under active development by field experts.
+                   </p>
+                 </div>
+              )}
+              
+              <div className="mt-8 flex justify-end">
+                 <span className="opacity-0 group-hover:opacity-100 transition-opacity text-cyan-500 flex items-center text-sm font-bold uppercase tracking-wider">
+                   Learn More <ChevronRight className="h-4 w-4 ml-1" />
+                 </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default Services;
