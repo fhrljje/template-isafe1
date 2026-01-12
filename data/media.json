@@ -5,28 +5,20 @@
   },
   "carousel": [
     {
-      "id": 1768206251083,
-      "url": "/uploads/carousel/9567b77b-ab7f-44d0-b33e-744e3485a3ae.jpg",
+      "id": 1768208830031,
+      "url": "/uploads/carousel/d75baea1-1375-435e-8dc5-64b51299ec8c.jpg",
       "title": "",
       "description": "",
       "order": 0,
-      "uploadedAt": "2026-01-12T08:24:11.083Z"
+      "uploadedAt": "2026-01-12T09:07:10.031Z"
     },
     {
-      "id": 1768206391745,
-      "url": "/uploads/carousel/9495d22a-e860-4710-b82a-0a851fbad97e.jpg",
+      "id": 1768208884000,
+      "url": "/uploads/carousel/5e8b6446-97c4-4d7e-beaa-d5300fb5ff2f.jpg",
       "title": "",
       "description": "",
       "order": 1,
-      "uploadedAt": "2026-01-12T08:26:31.745Z"
-    },
-    {
-      "id": 1768206429128,
-      "url": "/uploads/carousel/eff0effd-2f48-4ee1-8df5-3226325d4993.jpg",
-      "title": "",
-      "description": "",
-      "order": 2,
-      "uploadedAt": "2026-01-12T08:27:09.128Z"
+      "uploadedAt": "2026-01-12T09:08:04.000Z"
     }
   ]
 }

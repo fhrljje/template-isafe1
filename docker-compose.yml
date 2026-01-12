@@ -7,12 +7,12 @@ services:
       dockerfile: Dockerfile
     container_name: isafe-website
     ports:
-      - "9000:80"
+      - "9005:80"
     volumes:
       - ./data:/usr/share/nginx/html/data
     restart: unless-stopped
     networks:
-      - isafe-network
+      - apps-network
 
   isafe-cms:
     build:
@@ -20,7 +20,7 @@ services:
       dockerfile: Dockerfile
     container_name: isafe-cms
     ports:
-      - "3001:3001"
+      - "3005:3001"
     volumes:
       - ./data:/app/data
     environment:
@@ -28,10 +28,12 @@ services:
       - CMS_PORT=3001
       - ADMIN_USERNAME=admin
       - ADMIN_PASSWORD=isafe2024
+      - DATA_DIR=/app/data
+      - UPLOAD_DIR=/app/data/uploads
     restart: unless-stopped
     networks:
-      - isafe-network
+      - apps-network
 
 networks:
-  isafe-network:
-    driver: bridge
+  apps-network:
+    external: true
