@@ -27,27 +27,21 @@ const App: React.FC = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Load content
-        const contentUrl = import.meta.env.PROD ? '/api/content' : '/data/content.json';
-        const contentResponse = await fetch(contentUrl);
+        // Load content from CMS API (proxied in dev, direct in prod)
+        const contentResponse = await fetch('/api/content');
         if (contentResponse.ok) {
           const data = await contentResponse.json();
           setDynamicContent(data);
         }
 
-        // Load media
-        const mediaUrl = import.meta.env.PROD ? '/api/media' : '/data/media.json';
-        try {
-          const mediaResponse = await fetch(mediaUrl);
-          if (mediaResponse.ok) {
-            const mediaData = await mediaResponse.json();
-            setMedia(mediaData);
-          }
-        } catch {
-          // Media not available yet, use defaults
+        // Load media from CMS API
+        const mediaResponse = await fetch('/api/media');
+        if (mediaResponse.ok) {
+          const mediaData = await mediaResponse.json();
+          setMedia(mediaData);
         }
       } catch (error) {
-        console.log('Using default content');
+        console.log('Using default content - CMS may not be running');
       } finally {
         setLoading(false);
       }

@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+    /* Primary Red - from logo */
+    --color-primary-400: #EF4444;
+    --color-primary-500: #E63946;
+    --color-primary-600: #DB0212;
+    --color-primary-700: #B80210;
+    --color-primary-800: #900108;
+    --color-primary-900: #6B0106;
+
+    /* Dark Blue - from logo */
+    --color-darkblue-600: #002A5B;
+    --color-darkblue-700: #001F42;
+    --color-darkblue-800: #001535;
+    --color-darkblue-900: #000D24;
+    --color-darkblue-950: #000816;
+
+    /* Keep slate for cards */
+    --color-slate-850: #0a1628;
+
+    /* Font Families */
+    --font-family-sans: 'Inter', sans-serif;
+    --font-family-body: 'Open Sans', sans-serif;
+    --font-family-mono: 'JetBrains Mono', monospace;
+}
+
+@layer utilities {
+    .grid-bg {
+        background-image:
+            linear-gradient(to right, rgba(0, 42, 91, 0.5) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(0, 42, 91, 0.5) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+}

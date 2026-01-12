@@ -14,8 +14,8 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.CMS_PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'isafe-cms-secret-key-2024';
-const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
-const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, 'uploads');
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
+const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(__dirname, '..', 'data', 'uploads');
 
 // Admin credentials
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
@@ -26,20 +26,7 @@ await fs.mkdir(DATA_DIR, { recursive: true });
 await fs.mkdir(path.join(UPLOAD_DIR, 'logo'), { recursive: true });
 await fs.mkdir(path.join(UPLOAD_DIR, 'carousel'), { recursive: true });
 
-// Multer configuration for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const type = req.body.type || 'carousel';
-    const dest = path.join(UPLOAD_DIR, type);
-    cb(null, dest);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const filename = `${uuidv4()}${ext}`;
-    cb(null, filename);
-  }
-});
-
+// File filter for images
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
   if (allowedTypes.includes(file.mimetype)) {
@@ -49,16 +36,45 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const upload = multer({
-  storage,
+// Multer for logo uploads
+const logoStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(UPLOAD_DIR, 'logo'));
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `${uuidv4()}${ext}`);
+  }
+});
+
+// Multer for carousel uploads
+const carouselStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(UPLOAD_DIR, 'carousel'));
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `${uuidv4()}${ext}`);
+  }
+});
+
+const uploadLogo = multer({
+  storage: logoStorage,
   fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB
+  limits: { fileSize: 20 * 1024 * 1024 } // 20MB
+});
+
+const uploadCarousel = multer({
+  storage: carouselStorage,
+  fileFilter,
+  limits: { fileSize: 20 * 1024 * 1024 } // 20MB
 });
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(UPLOAD_DIR));
+app.use('/data', express.static(DATA_DIR));
 
 // Middleware to verify JWT token
 const authenticateToken = (req, res, next) => {
@@ -179,7 +195,7 @@ app.put('/api/media', authenticateToken, async (req, res) => {
 });
 
 // Upload logo
-app.post('/api/upload/logo', authenticateToken, upload.single('image'), async (req, res) => {
+app.post('/api/upload/logo', authenticateToken, uploadLogo.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -241,7 +257,7 @@ app.delete('/api/upload/logo', authenticateToken, async (req, res) => {
 });
 
 // Upload carousel images
-app.post('/api/upload/carousel', authenticateToken, upload.array('images', 10), async (req, res) => {
+app.post('/api/upload/carousel', authenticateToken, uploadCarousel.array('images', 10), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'No files uploaded' });
