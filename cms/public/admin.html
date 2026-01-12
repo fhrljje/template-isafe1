@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ISAFE CMS - Admin Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { 500: '#E63946', 600: '#DB0212', 700: '#B80210' },
+            darkblue: { 700: '#001F42', 800: '#001535', 900: '#000D24', 950: '#000816' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .tab-active { border-bottom: 2px solid #DB0212; color: #DB0212; }
+    .drag-over { border: 2px dashed #DB0212 !important; }
+  </style>
+</head>
+<body class="bg-darkblue-900 text-white min-h-screen">
+  <!-- Login Form -->
+  <div id="loginPage" class="min-h-screen flex items-center justify-center">
+    <div class="bg-darkblue-800 p-8 rounded-lg shadow-xl w-full max-w-md border border-darkblue-700">
+      <h1 class="text-2xl font-bold text-center mb-6 text-primary-600">ISAFE CMS</h1>
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-sm mb-1">Username</label>
+          <input type="text" id="username" class="w-full p-3 bg-darkblue-900 rounded border border-darkblue-700 focus:border-primary-600 focus:outline-none" required>
+        </div>
+        <div>
+          <label class="block text-sm mb-1">Password</label>
+          <input type="password" id="password" class="w-full p-3 bg-darkblue-900 rounded border border-darkblue-700 focus:border-primary-600 focus:outline-none" required>
+        </div>
+        <button type="submit" class="w-full bg-primary-600 hover:bg-primary-500 text-white font-semibold py-3 rounded transition">Login</button>
+        <p id="loginError" class="text-red-400 text-center hidden"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div id="dashboard" class="hidden">
+    <!-- Header -->
+    <header class="bg-darkblue-800 border-b border-darkblue-700 p-4 flex justify-between items-center">
+      <h1 class="text-xl font-bold text-primary-600">ISAFE CMS</h1>
+      <div class="flex items-center gap-4">
+        <span id="welcomeUser" class="text-gray-400"></span>
+        <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm">Logout</button>
+      </div>
+    </header>
+
+    <!-- Tabs -->
+    <nav class="bg-darkblue-800 border-b border-darkblue-700">
+      <div class="flex gap-4 px-4">
+        <button onclick="showTab('content')" id="tab-content" class="py-3 px-4 tab-active">Content</button>
+        <button onclick="showTab('media')" id="tab-media" class="py-3 px-4 hover:text-primary-500">Media</button>
+        <button onclick="showTab('settings')" id="tab-settings" class="py-3 px-4 hover:text-primary-500">Settings</button>
+        <button onclick="showTab('contacts')" id="tab-contacts" class="py-3 px-4 hover:text-primary-500">Contacts <span id="contactBadge" class="hidden bg-red-500 text-xs px-2 py-1 rounded-full ml-1">0</span></button>
+      </div>
+    </nav>
+
+    <!-- Content Tab -->
+    <div id="panel-content" class="p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Manage Content</h2>
+        <div class="flex gap-2">
+          <select id="langSelect" onchange="loadContentForLanguage()" class="bg-darkblue-800 border border-darkblue-700 rounded px-4 py-2">
+            <option value="ID">Bahasa Indonesia</option>
+            <option value="EN">English</option>
+          </select>
+          <button onclick="saveContent()" class="bg-primary-600 hover:bg-primary-500 text-white px-6 py-2 rounded font-semibold">Save Changes</button>
+        </div>
+      </div>
+
+      <div class="space-y-6 max-w-4xl">
+        <!-- Hero Section -->
+        <div class="bg-darkblue-800 rounded-lg p-6 border border-darkblue-700">
+          <h3 class="text-lg font-semibold text-primary-500 mb-4">Hero Section</h3>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm mb-1">Headline</label>
+              <input type="text" id="hero-headline" class="w-full p-3 bg-darkblue-900 rounded border border-darkblue-700 focus:border-primary-600 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-sm mb-1">Subheadline</label>
+              <textarea id="hero-subheadline" rows="2" class="w-full p-3 bg-darkblue-900 rounded border border-darkblue-700 focus:border-primary-600 focus:outline-none"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm mb-1">CTA Button Text</label>
+              <input type="text" id="hero-cta" class="w-full p-3 bg-darkblue-900 rounded border border-darkblue-700 focus:border-primary-600 focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- Intro -->
+        <div class="bg-darkblue-800 rounded-lg p-6 border border-darkblue-700">
+          <h3 class="text-lg font-semibold text-primary-500 mb-4">Introduction</h3>
+          <textarea id="intro" rows="4" class="w-full p-3 bg-darkblue-900 rounded border border-darkblue-700 focus:border-primary-600 focus:outline-none"></textarea>
+        </div>
+
+        <!-- About Section -->
+        <div class="bg-darkblue-800 rounded-lg p-6 border border-darkblue-700">
+          <h3 class="text-lg font-semibold text-primary-500 mb-4">About Section</h3>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm mb-1">Heading</label>
+              <input type="text" id="about-heading" class="w-full p-3 bg-darkblue-900 rounded border border-darkblue-700 focus:border-primary-600 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-sm mb-1">Paragraph 1</label>
+              <textarea id="about-body-0" rows="3" class="w-full p-3 bg-darkblue-900 rounded border border-darkblue-700 focus:border-primary-600 focus:outline-none"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm mb-1">Paragraph 2</label>
+              <textarea id="about-body-1" rows="3" class="w-full p-3 bg-darkblue-900 rounded border border-darkblue-700 focus:border-primary-600 focus:outline-none"></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm mb-1">Vision Title</label>
+                <input type="text" id="about-vision-title" class="w-full p-3 bg-darkblue-900 rounded border border-darkblue-700 focus:border-primary-600 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-sm mb-1">Mission Title</label>
+                <input type="text" id="about-mission-title" class="w-full p-3 bg-darkblue-900 rounded border border-darkblue-700 focus:border-primary-600 focus:outline-none">
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm mb-1">Vision Text</label>
+              <textarea id="about-vision-text" rows="2" class="w-full p-3 bg-darkblue-900 rounded border border-darkblue-700 focus:border-primary-600 focus:outline-none"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm mb-1">Mission Items (one per line)</label>
+              <textarea id="about-mission-items" rows="4" class="w-full p-3 bg-darkblue-900 rounded border border-darkblue-700 focus:border-primary-600 focus:outline-none"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Section -->
+        <div class="bg-darkblue-800 rounded-lg p-6 border border-darkblue-700">
+          <h3 class="text-lg font-semibold text-primary-500 mb-4">Footer</h3>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm mb-1">Tagline</label>
+              <input type="text" id="footer-tagline" class="w-full p-3 bg-darkblue-900 rounded border border-darkblue-700 focus:border-primary-600 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-sm mb-1">Copyright</label>
+              <input type="text" id="footer-copyright" class="w-full p-3 bg-darkblue-900 rounded border border-darkblue-700 focus:border-primary-600 focus:outline-none">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Media Tab -->
+    <div id="panel-media" class="p-6 hidden">
+      <h2 class="text-2xl font-bold mb-6">Media Management</h2>
+
+      <!-- Logo Section -->
+      <div class="bg-darkblue-800 rounded-lg p-6 border border-darkblue-700 mb-6 max-w-2xl">
+        <h3 class="text-lg font-semibold text-primary-500 mb-4">Logo</h3>
+        <div class="flex items-start gap-6">
+          <div id="logoPreviewContainer" class="w-32 h-32 bg-darkblue-900 border border-darkblue-700 rounded flex items-center justify-center">
+            <img id="logoPreview" src="" alt="Logo" class="max-w-full max-h-full hidden">
+            <span id="logoPlaceholder" class="text-gray-500 text-sm">No logo</span>
+          </div>
+          <div class="flex-1 space-y-4">
+            <input type="file" id="logoInput" accept="image/*" class="hidden" onchange="previewLogo(this)">
+            <button onclick="document.getElementById('logoInput').click()" class="bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded">Upload Logo</button>
+            <button onclick="deleteLogo()" id="deleteLogoBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded hidden">Delete</button>
+            <p class="text-gray-400 text-sm">Recommended: PNG with transparent background, max 5MB</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Carousel Section -->
+      <div class="bg-darkblue-800 rounded-lg p-6 border border-darkblue-700">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold text-primary-500">Carousel Images</h3>
+          <div>
+            <input type="file" id="carouselInput" accept="image/*" multiple class="hidden" onchange="uploadCarouselImages(this)">
+            <button onclick="document.getElementById('carouselInput').click()" class="bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded">+ Add Images</button>
+          </div>
+        </div>
+
+        <div id="carouselGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <!-- Carousel items will be rendered here -->
+        </div>
+        <p id="noCarousel" class="text-gray-400 hidden">No carousel images yet. Upload some images to get started.</p>
+      </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div id="panel-settings" class="p-6 hidden">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Site Settings</h2>
+        <button onclick="saveSettings()" class="bg-primary-600 hover:bg-primary-500 text-white px-6 py-2 rounded font-semibold">Save Settings</button>
+      </div>
+      <div class="bg-darkblue-800 rounded-lg p-6 space-y-4 max-w-2xl border border-darkblue-700">
+        <div>
+          <label class="block text-sm mb-1">Site Name</label>
+          <input type="text" id="settings-siteName" class="w-full p-3 bg-darkblue-900 rounded border border-darkblue-700 focus:border-primary-600 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-sm mb-1">Site Description</label>
+          <textarea id="settings-siteDescription" rows="2" class="w-full p-3 bg-darkblue-900 rounded border border-darkblue-700 focus:border-primary-600 focus:outline-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-sm mb-1">Contact Email</label>
+          <input type="email" id="settings-contactEmail" class="w-full p-3 bg-darkblue-900 rounded border border-darkblue-700 focus:border-primary-600 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-sm mb-1">Contact Phone</label>
+          <input type="text" id="settings-contactPhone" class="w-full p-3 bg-darkblue-900 rounded border border-darkblue-700 focus:border-primary-600 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-sm mb-1">Address</label>
+          <textarea id="settings-address" rows="2" class="w-full p-3 bg-darkblue-900 rounded border border-darkblue-700 focus:border-primary-600 focus:outline-none"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contacts Tab -->
+    <div id="panel-contacts" class="p-6 hidden">
+      <h2 class="text-2xl font-bold mb-6">Contact Submissions</h2>
+      <div id="contactsList" class="space-y-4 max-w-4xl"></div>
+      <p id="noContacts" class="text-gray-400 hidden">No contact submissions yet.</p>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg hidden"></div>
+
+  <script>
+    const API_URL = window.location.origin;
+    let token = localStorage.getItem('cms_token');
+    let content = { ID: {}, EN: {} };
+    let settings = {};
+    let media = { logo: null, carousel: [] };
+
+    if (token) verifyToken();
+
+    async function verifyToken() {
+      try {
+        const res = await fetch(`${API_URL}/api/verify`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) showDashboard();
+        else logout();
+      } catch (e) { logout(); }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch(`${API_URL}/api/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          token = data.token;
+          localStorage.setItem('cms_token', token);
+          showDashboard();
+        } else {
+          document.getElementById('loginError').textContent = data.error;
+          document.getElementById('loginError').classList.remove('hidden');
+        }
+      } catch (e) {
+        document.getElementById('loginError').textContent = 'Connection error';
+        document.getElementById('loginError').classList.remove('hidden');
+      }
+    });
+
+    function showDashboard() {
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+      document.getElementById('welcomeUser').textContent = 'Welcome, Admin';
+      loadContent();
+      loadSettings();
+      loadMedia();
+      loadContacts();
+    }
+
+    function logout() {
+      localStorage.removeItem('cms_token');
+      token = null;
+      document.getElementById('loginPage').classList.remove('hidden');
+      document.getElementById('dashboard').classList.add('hidden');
+    }
+
+    function showTab(tabName) {
+      ['content', 'media', 'settings', 'contacts'].forEach(tab => {
+        document.getElementById(`panel-${tab}`).classList.add('hidden');
+        document.getElementById(`tab-${tab}`).classList.remove('tab-active');
+      });
+      document.getElementById(`panel-${tabName}`).classList.remove('hidden');
+      document.getElementById(`tab-${tabName}`).classList.add('tab-active');
+    }
+
+    async function loadContent() {
+      try {
+        const res = await fetch(`${API_URL}/api/content`);
+        content = await res.json();
+        loadContentForLanguage();
+      } catch (e) { showToast('Failed to load content', 'error'); }
+    }
+
+    function loadContentForLanguage() {
+      const lang = document.getElementById('langSelect').value;
+      const c = content[lang] || {};
+
+      document.getElementById('hero-headline').value = c.hero?.headline || '';
+      document.getElementById('hero-subheadline').value = c.hero?.subheadline || '';
+      document.getElementById('hero-cta').value = c.hero?.cta || '';
+      document.getElementById('intro').value = c.intro || '';
+      document.getElementById('about-heading').value = c.about?.heading || '';
+      document.getElementById('about-body-0').value = c.about?.body?.[0] || '';
+      document.getElementById('about-body-1').value = c.about?.body?.[1] || '';
+      document.getElementById('about-vision-title').value = c.about?.vision?.title || '';
+      document.getElementById('about-vision-text').value = c.about?.vision?.text || '';
+      document.getElementById('about-mission-title').value = c.about?.mission?.title || '';
+      document.getElementById('about-mission-items').value = (c.about?.mission?.items || []).join('\n');
+      document.getElementById('footer-tagline').value = c.footer?.tagline || '';
+      document.getElementById('footer-copyright').value = c.footer?.copyright || '';
+    }
+
+    async function saveContent() {
+      const lang = document.getElementById('langSelect').value;
+      content[lang] = {
+        ...content[lang],
+        nav: content[lang].nav || {},
+        hero: {
+          headline: document.getElementById('hero-headline').value,
+          subheadline: document.getElementById('hero-subheadline').value,
+          cta: document.getElementById('hero-cta').value
+        },
+        intro: document.getElementById('intro').value,
+        about: {
+          heading: document.getElementById('about-heading').value,
+          body: [document.getElementById('about-body-0').value, document.getElementById('about-body-1').value],
+          vision: { title: document.getElementById('about-vision-title').value, text: document.getElementById('about-vision-text').value },
+          mission: { title: document.getElementById('about-mission-title').value, items: document.getElementById('about-mission-items').value.split('\n').filter(s => s.trim()) }
+        },
+        services: content[lang].services || {},
+        whyUs: content[lang].whyUs || {},
+        contact: content[lang].contact || {},
+        footer: { tagline: document.getElementById('footer-tagline').value, copyright: document.getElementById('footer-copyright').value }
+      };
+
+      try {
+        const res = await fetch(`${API_URL}/api/content`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(content)
+        });
+        if (res.ok) showToast('Content saved successfully!');
+        else showToast('Failed to save content', 'error');
+      } catch (e) { showToast('Connection error', 'error'); }
+    }
+
+    async function loadMedia() {
+      try {
+        const res = await fetch(`${API_URL}/api/media`);
+        media = await res.json();
+        renderMedia();
+      } catch (e) { showToast('Failed to load media', 'error'); }
+    }
+
+    function renderMedia() {
+      // Logo
+      const preview = document.getElementById('logoPreview');
+      const placeholder = document.getElementById('logoPlaceholder');
+      const deleteBtn = document.getElementById('deleteLogoBtn');
+
+      if (media.logo?.url) {
+        preview.src = media.logo.url;
+        preview.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+        deleteBtn.classList.remove('hidden');
+      } else {
+        preview.classList.add('hidden');
+        placeholder.classList.remove('hidden');
+        deleteBtn.classList.add('hidden');
+      }
+
+      // Carousel
+      const grid = document.getElementById('carouselGrid');
+      const noCarousel = document.getElementById('noCarousel');
+
+      if (!media.carousel || media.carousel.length === 0) {
+        grid.innerHTML = '';
+        noCarousel.classList.remove('hidden');
+        return;
+      }
+
+      noCarousel.classList.add('hidden');
+      grid.innerHTML = media.carousel.map(slide => `
+        <div class="relative group bg-darkblue-900 border border-darkblue-700 rounded overflow-hidden">
+          <img src="${slide.url}" alt="${slide.title || 'Slide'}" class="w-full h-32 object-cover">
+          <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+            <button onclick="deleteCarouselSlide(${slide.id})" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm">Delete</button>
+          </div>
+          <div class="p-2">
+            <input type="text" value="${escapeHtml(slide.title || '')}" placeholder="Title" onchange="updateSlide(${slide.id}, 'title', this.value)" class="w-full text-sm bg-darkblue-800 border border-darkblue-700 rounded px-2 py-1 mb-1 focus:outline-none focus:border-primary-600">
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function previewLogo(input) {
+      if (input.files && input.files[0]) {
+        uploadLogo(input.files[0]);
+      }
+    }
+
+    async function uploadLogo(file) {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('type', 'logo');
+
+      try {
+        const res = await fetch(`${API_URL}/api/upload/logo`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        if (res.ok) {
+          showToast('Logo uploaded successfully!');
+          loadMedia();
+        } else {
+          showToast('Failed to upload logo', 'error');
+        }
+      } catch (e) { showToast('Upload error', 'error'); }
+    }
+
+    async function deleteLogo() {
+      if (!confirm('Delete logo?')) return;
+      try {
+        const res = await fetch(`${API_URL}/api/upload/logo`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          showToast('Logo deleted');
+          loadMedia();
+        }
+      } catch (e) { showToast('Delete error', 'error'); }
+    }
+
+    async function uploadCarouselImages(input) {
+      if (!input.files || input.files.length === 0) return;
+
+      const formData = new FormData();
+      Array.from(input.files).forEach(file => formData.append('images', file));
+
+      try {
+        const res = await fetch(`${API_URL}/api/upload/carousel`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        if (res.ok) {
+          showToast('Images uploaded successfully!');
+          loadMedia();
+        } else {
+          showToast('Failed to upload images', 'error');
+        }
+      } catch (e) { showToast('Upload error', 'error'); }
+      input.value = '';
+    }
+
+    async function updateSlide(id, field, value) {
+      try {
+        await fetch(`${API_URL}/api/upload/carousel/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ [field]: value })
+        });
+      } catch (e) { showToast('Update error', 'error'); }
+    }
+
+    async function deleteCarouselSlide(id) {
+      if (!confirm('Delete this slide?')) return;
+      try {
+        const res = await fetch(`${API_URL}/api/upload/carousel/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          showToast('Slide deleted');
+          loadMedia();
+        }
+      } catch (e) { showToast('Delete error', 'error'); }
+    }
+
+    async function loadSettings() {
+      try {
+        const res = await fetch(`${API_URL}/api/settings`);
+        settings = await res.json();
+        document.getElementById('settings-siteName').value = settings.siteName || '';
+        document.getElementById('settings-siteDescription').value = settings.siteDescription || '';
+        document.getElementById('settings-contactEmail').value = settings.contactEmail || '';
+        document.getElementById('settings-contactPhone').value = settings.contactPhone || '';
+        document.getElementById('settings-address').value = settings.address || '';
+      } catch (e) { showToast('Failed to load settings', 'error'); }
+    }
+
+    async function saveSettings() {
+      settings = {
+        siteName: document.getElementById('settings-siteName').value,
+        siteDescription: document.getElementById('settings-siteDescription').value,
+        contactEmail: document.getElementById('settings-contactEmail').value,
+        contactPhone: document.getElementById('settings-contactPhone').value,
+        address: document.getElementById('settings-address').value,
+        socialMedia: settings.socialMedia || {}
+      };
+      try {
+        const res = await fetch(`${API_URL}/api/settings`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify(settings)
+        });
+        if (res.ok) showToast('Settings saved successfully!');
+        else showToast('Failed to save settings', 'error');
+      } catch (e) { showToast('Connection error', 'error'); }
+    }
+
+    async function loadContacts() {
+      try {
+        const res = await fetch(`${API_URL}/api/contacts`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const contacts = await res.json();
+
+        const unread = contacts.filter(c => !c.read).length;
+        const badge = document.getElementById('contactBadge');
+        if (unread > 0) { badge.textContent = unread; badge.classList.remove('hidden'); }
+        else { badge.classList.add('hidden'); }
+
+        const container = document.getElementById('contactsList');
+        const noContacts = document.getElementById('noContacts');
+
+        if (contacts.length === 0) { container.innerHTML = ''; noContacts.classList.remove('hidden'); return; }
+
+        noContacts.classList.add('hidden');
+        container.innerHTML = contacts.map(c => `
+          <div class="bg-darkblue-800 rounded-lg p-4 border border-darkblue-700 ${c.read ? '' : 'border-l-4 border-l-primary-600'}">
+            <div class="flex justify-between items-start mb-2">
+              <div>
+                <h3 class="font-semibold">${escapeHtml(c.name)}</h3>
+                <p class="text-gray-400 text-sm">${escapeHtml(c.institution || '')}</p>
+              </div>
+              <div class="text-right">
+                <p class="text-sm text-gray-400">${new Date(c.createdAt).toLocaleDateString()}</p>
+                <div class="flex gap-2 mt-2">
+                  ${!c.read ? `<button onclick="markAsRead(${c.id})" class="text-primary-500 text-sm hover:underline">Mark Read</button>` : ''}
+                  <button onclick="deleteContact(${c.id})" class="text-red-400 text-sm hover:underline">Delete</button>
+                </div>
+              </div>
+            </div>
+            <p class="text-sm"><span class="text-gray-400">Email:</span> ${escapeHtml(c.email)}</p>
+            <p class="text-sm"><span class="text-gray-400">Service:</span> ${escapeHtml(c.service || 'N/A')}</p>
+            <p class="mt-2 text-gray-300">${escapeHtml(c.message)}</p>
+          </div>
+        `).join('');
+      } catch (e) { showToast('Failed to load contacts', 'error'); }
+    }
+
+    async function markAsRead(id) {
+      try {
+        await fetch(`${API_URL}/api/contacts/${id}/read`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
+        loadContacts();
+      } catch (e) { showToast('Failed to update contact', 'error'); }
+    }
+
+    async function deleteContact(id) {
+      if (!confirm('Delete this contact?')) return;
+      try {
+        await fetch(`${API_URL}/api/contacts/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+        loadContacts();
+        showToast('Contact deleted');
+      } catch (e) { showToast('Failed to delete contact', 'error'); }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text || '';
+      return div.innerHTML;
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg ${type === 'error' ? 'bg-red-500' : 'bg-green-500'} text-white`;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+  </script>
+</body>
+</html>
